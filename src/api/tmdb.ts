@@ -7,6 +7,24 @@ import {
   NormalizedSearchResult,
 } from './types';
 
+const DEFAULT_OMDB_BASE_URL = 'https://www.omdbapi.com/';
+
+function normalizeOmdbBaseUrl(url: string | undefined): string {
+  const baseUrl = url?.trim() || DEFAULT_OMDB_BASE_URL;
+
+  try {
+    const parsedUrl = new URL(baseUrl);
+
+    if (parsedUrl.hostname === 'www.omdbapi.com' || parsedUrl.hostname === 'omdbapi.com') {
+      parsedUrl.protocol = 'https:';
+    }
+
+    return parsedUrl.toString();
+  } catch {
+    return DEFAULT_OMDB_BASE_URL;
+  }
+}
+
 class OmdbService {
   private axiosInstance: AxiosInstance;
   private apiKey: string;
@@ -14,7 +32,7 @@ class OmdbService {
 
   constructor() {
     this.apiKey = import.meta.env.VITE_OMDB_API_KEY ?? '';
-    this.baseUrl = import.meta.env.VITE_OMDB_BASE_URL || 'https://www.omdbapi.com/';
+    this.baseUrl = normalizeOmdbBaseUrl(import.meta.env.VITE_OMDB_BASE_URL);
 
     this.axiosInstance = axios.create({
       baseURL: this.baseUrl,
